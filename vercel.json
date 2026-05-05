@@ -1,0 +1,37 @@
+# vercel.json — Vercel deployment configuration
+#
+# Deploy with:
+#   npx vercel --prod
+# or connect your GitHub repo at https://vercel.com/new
+#
+# Set the GITHUB_TOKEN environment variable in:
+#   Vercel Dashboard → Project → Settings → Environment Variables
+
+{
+  "version": 2,
+  "name": "github-streak-tracker",
+  "builds": [
+    {
+      "src": "src/server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "src/server.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "headers": [
+    {
+      "source": "/streak",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, s-maxage=3600, stale-while-revalidate=86400" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    }
+  ]
+}
