@@ -1,11 +1,12 @@
 {
   "name": "github-streak-tracker",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Self-hosted GitHub contribution streak tracker — generates dynamic SVG cards for README profiles",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "vercel-dev": "vercel dev",
     "generate": "node src/generate.js",
     "test": "node src/test.js"
   },
