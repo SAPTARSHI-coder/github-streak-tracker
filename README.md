@@ -6,6 +6,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js 18+](https://img.shields.io/badge/node-%3E%3D18-green)](https://nodejs.org)
 [![Docs](https://img.shields.io/badge/Docs-/docs-orange)](./docs/index.md)
+[![Contributing](https://img.shields.io/badge/PRs-Welcome-brightgreen)](CONTRIBUTING.md)
+[![Code of Conduct](https://img.shields.io/badge/Code%20of%20Conduct-Contributor%20Covenant-purple)](CODE_OF_CONDUCT.md)
+[![Security](https://img.shields.io/badge/Security-Policy-red)](SECURITY.md)
+[![Changelog](https://img.shields.io/badge/Changelog-v2.0.0-yellow)](CHANGELOG.md)
+
 
 ---
 
