@@ -1,0 +1,28 @@
+# render.yaml — Render deployment configuration
+#
+# Deploy by connecting your GitHub repo at https://dashboard.render.com/new/web
+# and selecting "Use render.yaml".
+#
+# Set GITHUB_TOKEN in:
+#   Render Dashboard → Service → Environment → Add environment variable
+
+services:
+  - type: web
+    name: github-streak-tracker
+    runtime: node
+    plan: free          # Render free tier — spins down after 15 min inactivity
+    region: oregon      # us-west2  (free-tier region)
+    branch: main
+    buildCommand: npm ci --omit=dev
+    startCommand: node src/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: GITHUB_TOKEN
+        sync: false     # Mark as secret — you enter this in the dashboard
+      - key: CACHE_TTL_SECONDS
+        value: "3600"
+    healthCheckPath: /health
+    autoDeploy: true    # Redeploy on every push to main
