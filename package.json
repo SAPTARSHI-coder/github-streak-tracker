@@ -1,0 +1,25 @@
+{
+  "name": "github-streak-tracker",
+  "version": "1.0.0",
+  "description": "Self-hosted GitHub contribution streak tracker — generates dynamic SVG cards for README profiles",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "generate": "node src/generate.js",
+    "test": "node src/test.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["github", "streak", "svg", "readme", "profile", "stats"],
+  "license": "MIT"
+}
