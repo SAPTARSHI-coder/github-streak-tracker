@@ -1,10 +1,12 @@
 /**
  * svg.js — Dynamic SVG card generator
  *
- * Produces a dark-themed GitHub-style stats card that shows:
+ * Produces a GitHub-style stats card that shows:
  *   • Total Contributions
  *   • Current Streak  (with date range)
  *   • Longest Streak  (with date range)
+ *
+ * Supports multiple themes:  dark (default) | light | radical | tokyonight
  *
  * The card is a self-contained SVG string — no external fonts or assets are
  * fetched; everything is embedded so it renders correctly on GitHub README.
@@ -14,18 +16,53 @@
 
 const { formatDate } = require('./streak');
 
-// ── Design tokens ────────────────────────────────────────────────────────────
+// ── Theme palettes ────────────────────────────────────────────────────────────
 
-const COLORS = {
-  bg: '#0d1117',           // GitHub dark background
-  border: '#30363d',       // subtle border
-  title: '#8b949e',        // muted label text
-  value: '#e6edf3',        // primary value text
-  accent: '#f78166',       // fire / streak color (coral-orange)
-  accentAlt: '#58a6ff',    // blue accent (longest streak)
-  accentGreen: '#3fb950',  // green (total contributions)
-  divider: '#21262d',      // inner divider lines
-  subtext: '#6e7681',      // date range sub-labels
+const THEMES = {
+  dark: {
+    bg:          '#0d1117',
+    border:      '#30363d',
+    title:       '#8b949e',
+    value:       '#e6edf3',
+    accent:      '#f78166',   // 🔥 coral-orange
+    accentAlt:   '#58a6ff',   // ⚡ blue
+    accentGreen: '#3fb950',   // 📊 green
+    divider:     '#21262d',
+    subtext:     '#6e7681',
+  },
+  light: {
+    bg:          '#ffffff',
+    border:      '#d0d7de',
+    title:       '#57606a',
+    value:       '#1f2328',
+    accent:      '#cf222e',   // 🔥 red
+    accentAlt:   '#0969da',   // ⚡ blue
+    accentGreen: '#1a7f37',   // 📊 green
+    divider:     '#eaeef2',
+    subtext:     '#8c959f',
+  },
+  radical: {
+    bg:          '#141321',
+    border:      '#fe428e',
+    title:       '#a9fef7',
+    value:       '#fe428e',
+    accent:      '#fe428e',   // 🔥 pink
+    accentAlt:   '#f8d847',   // ⚡ yellow
+    accentGreen: '#a9fef7',   // 📊 cyan
+    divider:     '#2a2a4a',
+    subtext:     '#f8d847',
+  },
+  tokyonight: {
+    bg:          '#1a1b27',
+    border:      '#2f3241',
+    title:       '#a9b1d6',
+    value:       '#c0caf5',
+    accent:      '#f7768e',   // 🔥 rose
+    accentAlt:   '#7aa2f7',   // ⚡ cornflower blue
+    accentGreen: '#9ece6a',   // 📊 sage green
+    divider:     '#292e42',
+    subtext:     '#565f89',
+  },
 };
 
 const FONT = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
@@ -46,21 +83,22 @@ function escapeXml(str) {
  * Render one stat column inside the card.
  *
  * @param {object} opts
- * @param {number}  opts.x        - Centre X of the column
- * @param {number}  opts.y        - Top Y of the icon/value block
- * @param {string}  opts.icon     - Unicode emoji or symbol
- * @param {string}  opts.color    - Fill colour for icon + value
- * @param {string}  opts.label    - Small label above the value
- * @param {string}  opts.value    - Big number to display
- * @param {string}  [opts.sub]    - Optional sub-label (e.g. date range)
+ * @param {number}  opts.x      - Centre X of the column
+ * @param {number}  opts.y      - Top Y of the icon/value block
+ * @param {string}  opts.icon   - Unicode emoji or symbol
+ * @param {string}  opts.color  - Fill colour for icon + value
+ * @param {string}  opts.label  - Small label above the value
+ * @param {string}  opts.value  - Big number to display
+ * @param {object}  opts.colors - Resolved theme palette
+ * @param {string}  [opts.sub]  - Optional sub-label (e.g. date range)
  */
-function statColumn({ x, y, icon, color, label, value, sub }) {
+function statColumn({ x, y, icon, color, label, value, colors, sub }) {
   return `
     <!-- icon -->
     <text x="${x}" y="${y}" text-anchor="middle" font-size="26" fill="${color}">${icon}</text>
     <!-- label -->
     <text x="${x}" y="${y + 26}" text-anchor="middle"
-          font-family="${FONT}" font-size="11" fill="${COLORS.title}" letter-spacing="0.5">
+          font-family="${FONT}" font-size="11" fill="${colors.title}" letter-spacing="0.5">
       ${escapeXml(label)}
     </text>
     <!-- value -->
@@ -71,7 +109,7 @@ function statColumn({ x, y, icon, color, label, value, sub }) {
     ${
       sub
         ? `<text x="${x}" y="${y + 78}" text-anchor="middle"
-              font-family="${FONT}" font-size="10.5" fill="${COLORS.subtext}">
+              font-family="${FONT}" font-size="10.5" fill="${colors.subtext}">
           ${escapeXml(sub)}
         </text>`
         : ''
@@ -82,16 +120,17 @@ function statColumn({ x, y, icon, color, label, value, sub }) {
 /**
  * Build and return the full SVG string for the streak card.
  *
- * @param {object} opts
- * @param {string} opts.username
- * @param {number} opts.totalContributions
- * @param {number} opts.currentStreak
- * @param {number} opts.longestStreak
+ * @param {object}      opts
+ * @param {string}      opts.username
+ * @param {number}      opts.totalContributions
+ * @param {number}      opts.currentStreak
+ * @param {number}      opts.longestStreak
  * @param {string|null} opts.streakStart
  * @param {string|null} opts.streakEnd
  * @param {string|null} opts.longestStreakStart
  * @param {string|null} opts.longestStreakEnd
  * @param {string|null} opts.lastContributionDate
+ * @param {string}      [opts.theme='dark']  — 'dark' | 'light' | 'radical' | 'tokyonight'
  */
 function generateSVG(opts) {
   const {
@@ -104,7 +143,11 @@ function generateSVG(opts) {
     longestStreakStart,
     longestStreakEnd,
     lastContributionDate,
+    theme = 'dark',
   } = opts;
+
+  // Resolve colour palette — fall back to dark if unknown theme supplied
+  const C = THEMES[theme] || THEMES.dark;
 
   // Card dimensions
   const W = 495;
@@ -135,6 +178,7 @@ function generateSVG(opts) {
   const fadeAnim = (delay) =>
     `<animate attributeName="opacity" from="0" to="1" dur="0.6s" begin="${delay}s" fill="freeze"/>`;
 
+
   return `<svg
   xmlns="http://www.w3.org/2000/svg"
   width="${W}"
@@ -147,31 +191,32 @@ function generateSVG(opts) {
 
   <!-- ── Background ──────────────────────────────────────────────────── -->
   <rect width="${W}" height="${H}" rx="10" ry="10"
-        fill="${COLORS.bg}" stroke="${COLORS.border}" stroke-width="1"/>
+        fill="${C.bg}" stroke="${C.border}" stroke-width="1"/>
 
   <!-- ── Top title bar ────────────────────────────────────────────────── -->
   <text x="${W / 2}" y="22" text-anchor="middle"
         font-family="${FONT}" font-size="13" font-weight="600"
-        fill="${COLORS.title}" letter-spacing="0.8">
+        fill="${C.title}" letter-spacing="0.8">
     🔥 GitHub Streak Stats — ${escapeXml(username)}
   </text>
 
   <!-- ── Horizontal rule under title ──────────────────────────────────── -->
   <line x1="20" y1="32" x2="${W - 20}" y2="32"
-        stroke="${COLORS.divider}" stroke-width="1"/>
+        stroke="${C.divider}" stroke-width="1"/>
 
   <!-- ── Vertical dividers between columns ───────────────────────────── -->
   <line x1="${Math.round(W / 3)}" y1="38" x2="${Math.round(W / 3)}" y2="${H - 14}"
-        stroke="${COLORS.divider}" stroke-width="1"/>
+        stroke="${C.divider}" stroke-width="1"/>
   <line x1="${Math.round((W * 2) / 3)}" y1="38" x2="${Math.round((W * 2) / 3)}" y2="${H - 14}"
-        stroke="${COLORS.divider}" stroke-width="1"/>
+        stroke="${C.divider}" stroke-width="1"/>
 
   <!-- ── Column 1: Total Contributions ───────────────────────────────── -->
   <g opacity="0">${fadeAnim(0.1)}
     ${statColumn({
       x: col1X, y: rowY,
       icon: '📊',
-      color: COLORS.accentGreen,
+      color: C.accentGreen,
+      colors: C,
       label: 'TOTAL CONTRIBUTIONS',
       value: totalContributions.toLocaleString(),
       sub: 'Last 365 days',
@@ -183,7 +228,8 @@ function generateSVG(opts) {
     ${statColumn({
       x: col2X, y: rowY,
       icon: '🔥',
-      color: COLORS.accent,
+      color: C.accent,
+      colors: C,
       label: 'CURRENT STREAK',
       value: `${currentStreak} day${currentStreak !== 1 ? 's' : ''}`,
       sub: currentStreakSub,
@@ -195,7 +241,8 @@ function generateSVG(opts) {
     ${statColumn({
       x: col3X, y: rowY,
       icon: '⚡',
-      color: COLORS.accentAlt,
+      color: C.accentAlt,
+      colors: C,
       label: 'LONGEST STREAK',
       value: `${longestStreak} day${longestStreak !== 1 ? 's' : ''}`,
       sub: longestStreakSub,
@@ -204,7 +251,7 @@ function generateSVG(opts) {
 
   <!-- ── Footer ───────────────────────────────────────────────────────── -->
   <text x="${W / 2}" y="${H - 6}" text-anchor="middle"
-        font-family="${FONT}" font-size="9.5" fill="${COLORS.subtext}">
+        font-family="${FONT}" font-size="9.5" fill="${C.subtext}">
     Updated ${new Date().toUTCString().replace(' GMT', ' UTC')}
   </text>
 </svg>`;
