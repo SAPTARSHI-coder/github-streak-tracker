@@ -25,6 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
+    permissions:
+      contents: write   # needed to commit & push streak.svg back to the repo
+
     # Only run on the default branch
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
 
@@ -53,7 +56,7 @@ jobs:
           # Set your GitHub username as a repository variable:
           # Settings > Variables > Actions > New repository variable
           # Name: STREAK_USERNAME, Value: your-github-username
-          STREAK_USERNAME: ${{ vars.STREAK_USERNAME || 'octocat' }}
+          STREAK_USERNAME: ${{ vars.STREAK_USERNAME || github.repository_owner }}
         run: |
           node src/generate.js "$STREAK_USERNAME" streak.svg
           echo "Generated streak.svg for $STREAK_USERNAME"
