@@ -1,6 +1,6 @@
-MIT License
+MIT License with Attribution Requirement
 
-Copyright (c) 2025 Saptarshi Sadhu (github.com/SAPTARSHI-coder)
+Copyright (c) 2024-present SAPTARSHI SADHU (github.com/SAPTARSHI-coder)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -9,33 +9,27 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be preserved and
-included in ALL copies or substantial portions of the Software.
+1. The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
 
-Any public deployment, fork, or derivative work MUST:
-  1. Retain the original copyright notice above.
-  2. Clearly credit the original author — Saptarshi Sadhu — in the
-     project README, documentation, or about page.
-  3. Include a link back to the original repository:
-     https://github.com/SAPTARSHI-coder/github-streak-tracker
+2. ATTRIBUTION REQUIRED: Any public deployment, fork, or derivative of this
+   Software — including hosted services, modified versions, or projects that
+   incorporate this code — MUST display a visible credit in the user interface
+   or documentation in the following form:
+
+       "Based on GitHub Streak Tracker by SAPTARSHI SADHU
+        https://github.com/SAPTARSHI-coder/github-streak-tracker"
+
+   This attribution may not be removed, hidden, or obscured.
+
+3. The name "SAPTARSHI SADHU" and the project name "GitHub Streak Tracker"
+   may not be used to endorse or promote products derived from this Software
+   without prior written permission.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-───────────────────────────────────────────────────────────────────────────────
-ATTRIBUTION REQUIREMENT (Friendly Reminder)
-
-If you use, fork, host, or build on this project, please add this to your
-README or footer:
-
-  "GitHub Streak Tracker — originally created by Saptarshi Sadhu
-   (https://github.com/SAPTARSHI-coder/github-streak-tracker)"
-
-This is both a legal requirement under this license and a courtesy to the
-open-source community. Thank you. 🙏
-───────────────────────────────────────────────────────────────────────────────
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.

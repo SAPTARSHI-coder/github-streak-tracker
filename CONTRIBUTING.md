@@ -1,178 +1,301 @@
-# 🤝 Contributing to GitHub Streak Tracker
+# Contributing to GitHub Streak Tracker
 
-First off — **thank you** for taking the time to contribute! This project is open-source and welcomes improvements from everyone.
+**Made by [SAPTARSHI SADHU](https://github.com/SAPTARSHI-coder)**
 
----
-
-## 📋 Table of Contents
-
-- [Code of Conduct](#code-of-conduct)
-- [What Can I Contribute?](#what-can-i-contribute)
-- [Getting Started (Local Dev)](#getting-started-local-dev)
-- [Project Structure](#project-structure)
-- [Making a Pull Request](#making-a-pull-request)
-- [Coding Style](#coding-style)
-- [Commit Message Format](#commit-message-format)
-- [Attribution Requirement](#attribution-requirement)
+This guide covers everything — how the code works, how to contribute,
+and the exact git workflow to follow from fork to merged PR.
 
 ---
 
-## Code of Conduct
+## Table of Contents
 
-This project follows the [Contributor Covenant Code of Conduct](./CODE_OF_CONDUCT.md). By participating, you agree to uphold it. Report unacceptable behaviour to **saptarshisadhuofficial@gmail.com**.
-
----
-
-## What Can I Contribute?
-
-| Type | Examples |
-|------|---------|
-| 🐛 Bug fixes | Wrong streak count, broken SVG, API error not handled |
-| 🎨 New themes | A new color palette for `src/svg.js` |
-| ✨ New features | New stat columns, new query params, multi-year stats |
-| 📖 Documentation | Fixing typos, improving explanations in `docs/` |
-| ⚡ Performance | Smarter caching, faster SVG generation |
-| 🔒 Security | Responsible disclosure via `SECURITY.md` |
+1. [How the project works](#how-the-project-works)
+2. [Setting up locally](#setting-up-locally)
+3. [Full contribution workflow](#full-contribution-workflow)
+4. [What you can contribute](#what-you-can-contribute)
+5. [Code standards](#code-standards)
+6. [Attribution requirement](#attribution-requirement)
 
 ---
 
-## Getting Started (Local Dev)
+## How the project works
 
-### 1. Fork the repository
+Understanding this first will make everything else obvious.
 
-Click **Fork** on GitHub — this creates your own copy.
+```
+Your browser (or GitHub's image proxy)
+        │
+        │  GET /streak?username=SAPTARSHI-coder&template=ember
+        ▼
+  vercel.json  →  rewrites /streak → /api/streak.js
+        │
+        ▼
+  api/streak.js          ← HTTP handler (the only file that touches req/res)
+        │
+        ├── Validate all query params (username, template, palette, etc.)
+        ├── Build color palette (merge base palette + any custom hex overrides)
+        ├── Check cache (src/cache.js) — HIT? return instantly. MISS? continue.
+        │
+        ├── src/github.js  →  GitHub GraphQL API  →  raw contribution days[]
+        ├── src/streak.js  →  pure math           →  currentStreak, longestStreak, total
+        ├── src/templates/index.js  →  ember/frost/neon  →  SVG string
+        │
+        └── res: image/svg+xml + Cache-Control headers
+```
 
-### 2. Clone your fork
+**Key files:**
+
+| File | What it does |
+|------|-------------|
+| `api/streak.js` | HTTP handler — validates input, orchestrates everything, sends SVG |
+| `src/github.js` | Calls GitHub GraphQL, returns flat array of contribution days |
+| `src/streak.js` | Pure function — calculates streaks from contribution days |
+| `src/cache.js` | In-memory key→value store with per-entry TTL expiry |
+| `src/icons.js` | Raw SVG `<path>` data for icons (no emojis — GitHub proxy strips them) |
+| `src/templates/ember.js` | Card renderer — receives data+options, returns SVG string |
+| `src/templates/index.js` | Template registry — `getTemplate('ember')` returns the render function |
+| `src/server.js` | Express dev server — delegates to `api/streak.js` handler |
+| `src/generate.js` | CLI tool — same logic as the API, writes SVG to a file |
+| `.github/workflows/update-streak.yml` | GitHub Actions — runs `src/generate.js` daily, commits `streak.svg` |
+
+---
+
+## Setting up locally
 
 ```bash
-git clone https://github.com/<your-username>/github-streak-tracker.git
+# 1. Fork the repo on GitHub, then clone your fork
+git clone https://github.com/YOUR_USERNAME/github-streak-tracker.git
 cd github-streak-tracker
-```
 
-### 3. Install dependencies
-
-```bash
+# 2. Install dependencies
 npm install
-```
 
-### 4. Set up your environment
-
-```bash
+# 3. Set up your environment
 cp .env.example .env
-# Edit .env → paste your GITHUB_TOKEN
+# Open .env and paste your GitHub token:
+# GITHUB_TOKEN=ghp_your_token_here
+# (Get one at github.com/settings/tokens — zero scopes needed)
+
+# 4. Start the dev server
+npm run dev
+# → http://localhost:3000/streak?username=YOUR_LOGIN
+# → http://localhost:3000/health
+
+# 5. Verify it works
+curl http://localhost:3000/health
 ```
 
-### 5. Run the local server
+If you see `{"ok":true,...}` — you're ready.
+
+---
+
+## Full contribution workflow
+
+Follow this exact sequence every time.
+
+### Step 1 — Sync your fork with upstream
+
+Before starting any work, make sure your fork is up to date:
 
 ```bash
-npm start
-# → http://localhost:3000/streak?username=your-username
+# Add upstream remote (only needed once)
+git remote add upstream https://github.com/SAPTARSHI-coder/github-streak-tracker.git
+
+# Pull latest changes from the original repo
+git fetch upstream
+git checkout main
+git merge upstream/main
+
+# Push the sync to your fork
+git push origin main
 ```
 
-### 6. Run tests before making changes
+### Step 2 — Create a branch
+
+**Never work directly on `main`.** Create a descriptive branch:
 
 ```bash
-npm test
-# All 6 tests must pass
+# For a new feature
+git checkout -b feat/my-new-template
+
+# For a bug fix
+git checkout -b fix/stacked-layout-overflow
+
+# For docs
+git checkout -b docs/update-api-reference
+```
+
+Branch naming convention:
+- `feat/` — new feature
+- `fix/` — bug fix
+- `docs/` — documentation only
+- `refactor/` — code restructure, no behavior change
+
+### Step 3 — Make your changes
+
+Edit the files you need. The dev server hot-reloads automatically (nodemon).
+
+**Test your change immediately:**
+```bash
+# In browser
+http://localhost:3000/streak?username=YOUR_LOGIN
+
+# Or generate a local file
+node src/generate.js YOUR_LOGIN test.svg
+# Open test.svg in your browser to inspect
+```
+
+### Step 4 — Check for mistakes
+
+```bash
+# Make sure Node.js can load all files without errors
+node -e "require('./api/streak'); require('./src/templates/index'); console.log('OK');"
+
+# Generate SVGs for all 3 templates × 3 layouts to confirm nothing is broken
+node src/generate.js YOUR_LOGIN ember-row.svg    ember dark row
+node src/generate.js YOUR_LOGIN frost-hero.svg   frost nord hero
+node src/generate.js YOUR_LOGIN neon-stacked.svg neon dracula stacked
+```
+
+If all 3 generate without errors and look correct in your browser — you're good.
+
+### Step 5 — Commit your changes
+
+Write a clear, specific commit message:
+
+```bash
+git add -A
+git commit -m "feat: add gruvbox palette to PALETTES"
+# or
+git commit -m "fix: stacked layout third stat date was null instead of empty string"
+# or
+git commit -m "docs: add palette screenshot to templates.md"
+```
+
+Commit message format: `type: short description` (all lowercase)
+
+Types: `feat`, `fix`, `docs`, `refactor`, `chore`
+
+### Step 6 — Push and open a PR
+
+```bash
+git push origin feat/my-new-template
+```
+
+Then on GitHub:
+1. Go to your fork → you'll see a **"Compare & pull request"** button → click it
+2. Fill in the PR template:
+   - What did you change?
+   - Why?
+   - Screenshot if it's a visual change
+3. Set base branch to `main` of `SAPTARSHI-coder/github-streak-tracker`
+4. Submit
+
+### Step 7 — Address review feedback
+
+If changes are requested:
+```bash
+# Make the edits locally
+git add -A
+git commit -m "fix: address review feedback — adjust icon size"
+git push origin feat/my-new-template
+# The PR updates automatically
 ```
 
 ---
 
-## Project Structure
+## What you can contribute
 
-```
-api/streak.js     ← Serverless handler (transport layer)
-src/github.js     ← GitHub API — change this to fetch different data
-src/streak.js     ← Streak math — change this to fix logic
-src/svg.js        ← Card design — change this to update themes/layout
-src/cache.js      ← Caching — change this to swap backends
-docs/             ← Developer documentation (mirrors src/)
-```
+### Adding a new template
 
-Full explanation: [`docs/architecture.md`](./docs/architecture.md)
+1. Create `src/templates/mytemplate.js`
+   - Export a function: `function mytemplate(data, options) { return '<svg>...</svg>'; }`
+   - Follow the UMD pattern from `ember.js` (copy it as a starting point)
+   - Use `options.colors.accent`, `options.colors.bg` etc. for colors
+   - Use `Icons.flame`, `Icons.bolt`, `Icons.barChart` from `src/icons.js`
 
----
-
-## Making a Pull Request
-
-1. **Create a branch** from `main`:
-   ```bash
-   git checkout -b feat/your-feature-name
-   # or
-   git checkout -b fix/bug-description
+2. Register it in `src/templates/index.js`:
+   ```js
+   // In the Node.js require block:
+   require('./mytemplate')
+   // In the factory parameters:
+   function(ember, frost, neon, mytemplate)
+   // In the registry:
+   registry.mytemplate = mytemplate;
    ```
 
-2. **Make your changes** — keep commits small and focused.
-
-3. **Run tests** — all 6 must still pass:
-   ```bash
-   npm test
+3. Add it to `VALID_TEMPLATES` in `api/streak.js`:
+   ```js
+   const VALID_TEMPLATES = new Set(['ember', 'frost', 'neon', 'mytemplate']);
    ```
 
-4. **Push your branch**:
-   ```bash
-   git push origin feat/your-feature-name
+4. Test: `node src/generate.js YOUR_LOGIN test.svg mytemplate dark row`
+
+5. Document it in `docs/templates.md`
+
+---
+
+### Adding a new palette
+
+1. Add to `PALETTES` in `api/streak.js` (9 color tokens):
+   ```js
+   gruvbox: {
+     bg: '#282828',      // card background
+     border: '#504945',  // card border stroke
+     title: '#ebdbb2',   // title text
+     value: '#ebdbb2',   // generic text
+     accent: '#fb4934',  // current streak (flame icon + value)
+     accentAlt: '#83a598',   // longest streak (bolt icon + value)
+     accentGreen: '#b8bb26', // total contributions (chart icon + value)
+     subtext: '#928374',  // small date sub-labels
+     divider: '#3c3836',  // separator lines
+   },
    ```
 
-5. **Open a Pull Request** on GitHub. Use the PR template provided.
+2. Add to `VALID_PALETTES`:
+   ```js
+   const VALID_PALETTES = new Set([..., 'gruvbox']);
+   ```
 
-6. A maintainer will review and merge or request changes.
+3. Mirror the same object in `src/generate.js` in its own `PALETTES` block
 
----
+4. Test: `curl "http://localhost:3000/streak?username=YOUR_LOGIN&palette=gruvbox"`
 
-## Coding Style
-
-- **`'use strict'`** at the top of every JS file
-- **`const`** by default, `let` only when reassignment is needed, never `var`
-- **JSDoc comments** on all exported functions
-- **Single quotes** for strings
-- **2-space indentation**
-- **No console.log in src/ modules** — only in `api/` and `src/generate.js`
-- Keep each module **focused on one job** (see the three-layer architecture)
+5. Document in `docs/templates.md`
 
 ---
 
-## Commit Message Format
+### Fixing a bug
 
-Use [Conventional Commits](https://www.conventionalcommits.org/):
-
-```
-feat: add ocean theme to SVG generator
-fix: correct yesterday-anchor logic for UTC+14 timezones
-docs: add example for adding a new stat column
-chore: bump node-fetch to 2.7.1
-test: add edge case for single-day streak
-refactor: extract color resolution into helper
-```
-
-Prefix guide:
-| Prefix | When to use |
-|--------|------------|
-| `feat` | New feature or theme |
-| `fix` | Bug fix |
-| `docs` | Documentation only |
-| `chore` | Build, dependencies, config |
-| `test` | Adding/fixing tests |
-| `refactor` | Code change with no behaviour change |
-| `perf` | Performance improvement |
+1. Reproduce the bug locally with a specific URL
+2. Add a comment above your fix explaining what was wrong and why the fix works
+3. Test that the original broken URL now works
+4. Confirm no other templates/layouts were broken by testing all 9 combos
 
 ---
 
-## Adding a New Theme
+### Updating documentation
 
-1. Add your palette to the `THEMES` object in `src/svg.js` (see [`docs/customization.md`](./docs/customization.md#3-adding-a-new-theme))
-2. Add the theme name to `VALID_THEMES` in `api/streak.js`
-3. Document it in [`docs/customization.md`](./docs/customization.md)
-4. Open a PR with a screenshot showing the theme
+Docs live in `docs/`. Edit the relevant `.md` file.
+No code changes needed — just open a PR with the doc fix.
 
 ---
 
-## Attribution Requirement
+## Code standards
 
-By submitting a pull request, you agree that your contribution will be released under the same [MIT License](./LICENSE) as this project. The original copyright notice must be preserved in all derivative works.
+- **No build step** — vanilla JavaScript (CommonJS `require`), no TypeScript, no transpilation
+- **UMD pattern** for templates and icons — they must work in both Node.js and a browser
+- **No new dependencies** unless absolutely necessary — open an issue to discuss first
+- **Comments** — every non-obvious piece of logic must have a comment explaining *why*, not just *what*
+- **No emojis in SVGs** — GitHub's image proxy strips them. Use `<path>` data from `src/icons.js`
+- **Test all 3 layouts** — row, stacked, hero — before submitting a template change
 
-If you fork and host your own instance, please add to your README:
+---
 
-> GitHub Streak Tracker originally created by [Saptarshi Sadhu](https://github.com/SAPTARSHI-coder/github-streak-tracker).
+## Attribution requirement
 
-Thank you for keeping the open-source spirit alive! 🙏
+Per the [LICENSE](LICENSE), if you fork this project and deploy it publicly, you **must** include a visible credit:
+
+> *Based on [GitHub Streak Tracker](https://github.com/SAPTARSHI-coder/github-streak-tracker) by [SAPTARSHI SADHU](https://github.com/SAPTARSHI-coder)*
+
+PRs that remove attribution from the codebase or documentation will not be accepted.

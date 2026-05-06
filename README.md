@@ -1,222 +1,219 @@
-# 🔥 GitHub Streak Tracker
+# GitHub Streak Tracker
 
-> **Self-hosted** GitHub contribution streak card — deployed on Vercel, powered by GitHub's GraphQL API, completely **free** and open-source.
+<div align="center">
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?logo=vercel)](https://github-streak-tracker-for-all.vercel.app/api/streak?username=SAPTARSHI-coder)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Node.js 18+](https://img.shields.io/badge/node-%3E%3D18-green)](https://nodejs.org)
-[![Docs](https://img.shields.io/badge/Docs-/docs-orange)](./docs/index.md)
-[![Contributing](https://img.shields.io/badge/PRs-Welcome-brightgreen)](CONTRIBUTING.md)
-[![Code of Conduct](https://img.shields.io/badge/Code%20of%20Conduct-Contributor%20Covenant-purple)](CODE_OF_CONDUCT.md)
-[![Security](https://img.shields.io/badge/Security-Policy-red)](SECURITY.md)
-[![Changelog](https://img.shields.io/badge/Changelog-v2.0.0-yellow)](CHANGELOG.md)
+**A self-hosted, zero-dependency serverless API that generates dynamic SVG streak cards for your GitHub profile README.**
 
+[![License: MIT](https://img.shields.io/badge/License-MIT%20%2B%20Attribution-blue.svg)](LICENSE)
+[![Node.js 18+](https://img.shields.io/badge/Node.js-18%2B-brightgreen.svg)](https://nodejs.org)
+[![Vercel Ready](https://img.shields.io/badge/Vercel-Ready-black.svg?logo=vercel)](https://vercel.com)
+[![Made by SAPTARSHI-coder](https://img.shields.io/badge/Made%20by-SAPTARSHI--coder-orange.svg)](https://github.com/SAPTARSHI-coder)
+
+![GitHub Streak](https://raw.githubusercontent.com/SAPTARSHI-coder/github-streak-tracker/main/streak.svg)
+
+[🚀 Deploy Now](#deployment) · [📖 API Docs](docs/api.md) · [🎨 Templates](docs/templates.md) · [⚙️ Setup](docs/setup.md)
+
+</div>
 
 ---
 
-## 🌐 Live Service
+## Overview
 
-**Base URL:** `https://github-streak-tracker-for-all.vercel.app`
+GitHub Streak Tracker is a **serverless API** you deploy once on Vercel. It:
 
-| Endpoint | Description |
-|----------|-------------|
-| `/api/streak?username=X` | SVG streak card for user X |
-| `/api/streak?username=X&theme=radical` | With a custom theme |
-| `/health` | Service health check (JSON) |
+1. Fetches your contribution data from GitHub's GraphQL API
+2. Calculates your current streak, longest streak, and total contributions
+3. Renders a fully custom SVG card — no external fonts, no dependencies, instant load
 
-**Try it now:**
+Drop the URL in your `README.md` and it updates live.
+
+---
+
+## Features
+
+- 🎨 **3 templates** — Ember, Frost, Neon
+- 🌈 **5 color palettes** — Dark, Dracula, Catppuccin, Nord, Light + fully custom hex
+- 📐 **3 layouts** — Row, Stacked, Hero
+- ✍️ **4 font stacks** — Inter, JetBrains Mono, Space Grotesk, Mono
+- ⚡ **In-memory cache** — zero repeated API calls, 1-hour TTL
+- 🤖 **GitHub Actions automation** — daily SVG commit, zero extra secrets
+- 🔒 **Zero scopes** — GitHub token needs no permissions for public data
+
+---
+
+## Quick Start
+
+### 1. Deploy to Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/SAPTARSHI-coder/github-streak-tracker)
+
+Or manually:
+```bash
+git clone https://github.com/SAPTARSHI-coder/github-streak-tracker.git
+# Import the repo on vercel.com/new
 ```
-https://github-streak-tracker-for-all.vercel.app/api/streak?username=SAPTARSHI-coder
-https://github-streak-tracker-for-all.vercel.app/api/streak?username=torvalds&theme=tokyonight
+
+### 2. Add your GitHub Token
+
+Vercel Dashboard → **Settings → Environment Variables**:
 ```
+GITHUB_TOKEN = ghp_xxxxxxxxxxxx
+```
+Get a free token at [github.com/settings/tokens](https://github.com/settings/tokens) — **no scopes needed**.
 
----
+### 3. Embed in your README
 
-## 🎨 Available Themes
-
-| Theme | Preview |
-|-------|---------|
-| `dark` *(default)* | GitHub dark — `#0d1117` bg, coral 🔥, blue ⚡, green 📊 |
-| `light` | GitHub light — white bg, red 🔥, blue ⚡, green 📊 |
-| `radical` | Neon — `#141321` bg, pink 🔥, yellow ⚡, cyan 📊 |
-| `tokyonight` | Tokyo Night — `#1a1b27` bg, rose 🔥, cornflower ⚡, sage 📊 |
-
----
-
-## 📋 Add to Your GitHub Profile README
-
-Pick any style and paste into your profile `README.md`:
-
-### Default dark theme
 ```markdown
-![GitHub Streak](https://github-streak-tracker-for-all.vercel.app/api/streak?username=YOUR_USERNAME)
+![GitHub Streak](https://your-app.vercel.app/streak?username=YOUR_USERNAME)
 ```
-
-### With a specific theme
-```markdown
-![GitHub Streak](https://github-streak-tracker-for-all.vercel.app/api/streak?username=YOUR_USERNAME&theme=tokyonight)
-```
-
-### Clickable card (links to your profile)
-```markdown
-[![GitHub Streak](https://github-streak-tracker-for-all.vercel.app/api/streak?username=YOUR_USERNAME&theme=radical)](https://github.com/YOUR_USERNAME)
-```
-
-> Replace `YOUR_USERNAME` with your actual GitHub username.
 
 ---
 
-## 📁 Project Structure
+## API Parameters
+
+| Parameter | Options | Default | Description |
+|-----------|---------|---------|-------------|
+| `username` | your GitHub login | — | **Required** |
+| `template` | `ember` `frost` `neon` | `ember` | Card design |
+| `palette` | `dark` `dracula` `catppuccin` `nord` `light` `custom` | `dark` | Color theme |
+| `layout` | `row` `stacked` `hero` | `row` | Stat arrangement |
+| `font` | `inter` `jetbrains` `spacegrotesk` `mono` | `inter` | Font family |
+| `bg` | `%23RRGGBB` | — | Custom background (`palette=custom` only) |
+| `accent` | `%23RRGGBB` | — | Custom streak color (`palette=custom` only) |
+| `border` | `%23RRGGBB` | — | Custom border color (`palette=custom` only) |
+
+> Note: URL-encode `#` as `%23` in query strings.
+
+### Example URLs
+
+```
+# Frost template, Dracula palette, hero layout
+/streak?username=SAPTARSHI-coder&template=frost&palette=dracula&layout=hero
+
+# Neon template, JetBrains font
+/streak?username=SAPTARSHI-coder&template=neon&font=jetbrains
+
+# Custom colors
+/streak?username=SAPTARSHI-coder&palette=custom&bg=%230d1117&accent=%23ff79c6&border=%236272a4
+
+# Stacked layout, Nord palette
+/streak?username=SAPTARSHI-coder&layout=stacked&palette=nord
+```
+
+---
+
+## Templates
+
+| | `ember` | `frost` | `neon` |
+|--|---------|---------|--------|
+| **Background** | Dark gradient | Navy flat | Pure black |
+| **Accent** | Coral top bar | Gradient fade bar | Glowing border |
+| **Dividers** | Subtle lines | Dashed accent | Dark lines |
+| **Icons** | SVG paths | SVG paths | SVG paths + glow |
+| **Best with** | `dark`, `dracula` | `nord`, `catppuccin` | `dracula`, custom |
+
+---
+
+## GitHub Actions — Daily Auto-Update
+
+The included workflow runs at **00:10 UTC daily**. It regenerates `streak.svg` and commits it automatically — no extra secrets required.
+
+**One-time setup:**
+1. Settings → Actions → General → **"Read and write permissions"** → Save
+2. Optionally set repository variables (Settings → Secrets and variables → Actions → Variables):
+
+| Variable | Default | Example |
+|----------|---------|---------|
+| `STREAK_USERNAME` | repo owner | `SAPTARSHI-coder` |
+| `STREAK_TEMPLATE` | `ember` | `neon` |
+| `STREAK_PALETTE` | `dark` | `dracula` |
+| `STREAK_LAYOUT` | `row` | `hero` |
+| `STREAK_FONT` | `inter` | `jetbrains` |
+
+Then embed the static SVG:
+```markdown
+![GitHub Streak](https://raw.githubusercontent.com/SAPTARSHI-coder/github-streak-tracker/main/streak.svg)
+```
+
+---
+
+## Local Development
+
+```bash
+git clone https://github.com/SAPTARSHI-coder/github-streak-tracker.git
+cd github-streak-tracker
+npm install
+cp .env.example .env        # add your GITHUB_TOKEN
+npm run dev                 # starts on http://localhost:3000
+
+# Test endpoints
+curl http://localhost:3000/streak?username=SAPTARSHI-coder
+curl http://localhost:3000/health
+
+# Generate a local SVG file
+node src/generate.js SAPTARSHI-coder streak.svg ember dark row
+```
+
+---
+
+## Project Structure
 
 ```
 github-streak-tracker/
-│
-├── api/                         ← Vercel serverless functions
-│   ├── streak.js                  Entry point: GET /api/streak
-│   └── health.js                  Health check: GET /health
-│
-├── src/                         ← Core business logic (shared by all deploy modes)
-│   ├── github.js                  GitHub GraphQL API client
-│   ├── streak.js                  Streak + stats calculation
-│   ├── svg.js                     SVG card generator (4 themes)
-│   ├── cache.js                   In-memory TTL cache
-│   ├── generate.js                CLI generator (used by GitHub Actions)
-│   ├── server.js                  Local Express server (for development)
-│   └── test.js                    Unit tests
-│
-├── docs/                        ← Full developer documentation
-│   ├── index.md                   Start here
-│   ├── architecture.md            System design & data flow
-│   ├── customization.md           How to change themes, colors, layout
-│   ├── api/
-│   │   ├── streak.md              /api/streak endpoint reference
-│   │   └── health.md              /health endpoint reference
-│   ├── src/
-│   │   ├── github.md              GitHub API module explained
-│   │   ├── streak.md              Streak logic explained
-│   │   ├── svg.md                 SVG generator explained
-│   │   ├── cache.md               Cache module explained
-│   │   └── generate.md            CLI generator explained
-│   ├── .github/workflows/
-│   │   └── update-streak.md       GitHub Actions workflow explained
-│   └── deployment/
-│       ├── vercel.md              Deploy to Vercel
-│       ├── render.md              Deploy to Render.com
-│       └── static-svg.md          GitHub Actions static SVG (no server)
-│
+├── api/
+│   ├── streak.js          ← Vercel serverless function (main endpoint)
+│   └── health.js          ← Health check
+├── src/
+│   ├── github.js          ← GitHub GraphQL API client
+│   ├── streak.js          ← Streak calculation engine
+│   ├── cache.js           ← In-memory TTL cache
+│   ├── server.js          ← Express dev server
+│   ├── generate.js        ← CLI for local/CI SVG generation
+│   ├── icons.js           ← SVG path icons (no emojis)
+│   └── templates/
+│       ├── index.js       ← Template registry
+│       ├── ember.js       ← Warm dark card
+│       ├── frost.js       ← Cool navy card
+│       └── neon.js        ← Neon glow card
+├── docs/                  ← Full documentation
 ├── .github/
-│   └── workflows/
-│       └── update-streak.yml    Daily cron: auto-generate streak.svg
-│
-├── .env.example                 Environment variable template
-├── .gitignore
-├── package.json
-├── vercel.json                  Vercel routing config
-├── render.yaml                  Render.com deployment manifest
-└── README.md
-```
-
-> 📖 **New here?** Start with [`docs/index.md`](./docs/index.md) for a guided walkthrough.
-
----
-
-## ⚡ Quick Local Development
-
-```bash
-# 1. Clone
-git clone https://github.com/SAPTARSHI-coder/github-streak-tracker.git
-cd github-streak-tracker
-
-# 2. Install
-npm install
-
-# 3. Set your GitHub token
-cp .env.example .env
-# Edit .env → GITHUB_TOKEN=ghp_your_token_here
-
-# 4. Start local server
-npm start
-# → http://localhost:3000/streak?username=SAPTARSHI-coder
-
-# 5. Run tests
-npm test
+│   ├── workflows/
+│   │   └── update-streak.yml  ← Daily automation
+│   └── ISSUE_TEMPLATE/
+├── .env.example           ← Environment variable reference
+├── vercel.json            ← Vercel route config
+└── package.json
 ```
 
 ---
 
-## 🚀 Deploy Your Own Instance
+## Documentation
 
-### Vercel (Recommended — always-on free tier)
-
-```bash
-npm install -g vercel
-vercel login
-vercel --prod
-```
-
-Then in Vercel Dashboard → Settings → Environment Variables:
-- Add `GITHUB_TOKEN` = your GitHub Personal Access Token
-
-Done. Your URL: `https://your-project.vercel.app/api/streak?username=YOUR_USERNAME`
-
-### Other Options
-
-| Platform | Guide | Notes |
-|----------|-------|-------|
-| Render.com | [docs/deployment/render.md](./docs/deployment/render.md) | Free, sleeps after 15min idle |
-| GitHub Actions (static) | [docs/deployment/static-svg.md](./docs/deployment/static-svg.md) | No server, daily auto-update |
-
----
-
-## 🔧 How It Works (Quick Summary)
-
-```
-GET /api/streak?username=octocat
-        │
-        ▼
-  ┌─────────────┐
-  │ Cache hit?  │──YES──→ return cached SVG instantly
-  └──────┬──────┘
-         │ NO
-         ▼
-  ┌──────────────────────┐
-  │  GitHub GraphQL API  │  Fetches 365 days of contribution data
-  └──────────┬───────────┘
-             │
-             ▼
-  ┌──────────────────────┐
-  │  Streak Calculator   │  current streak / longest / total
-  └──────────┬───────────┘
-             │
-             ▼
-  ┌──────────────────────┐
-  │   SVG Generator      │  Applies theme, builds card
-  └──────────┬───────────┘
-             │
-             ▼
-  Cache (1 hr) → respond with image/svg+xml
-```
-
-> For a deep dive: [`docs/architecture.md`](./docs/architecture.md)
-
----
-
-## 📖 Documentation
-
-All docs are in [`/docs`](./docs/) and mirror the project structure:
-
-| Doc | What it explains |
-|-----|-----------------|
-| [docs/index.md](./docs/index.md) | Overview, concepts, where to start |
-| [docs/architecture.md](./docs/architecture.md) | Full system design |
-| [docs/customization.md](./docs/customization.md) | Change themes, colors, layout |
-| [docs/api/streak.md](./docs/api/streak.md) | `/api/streak` full reference |
-| [docs/src/svg.md](./docs/src/svg.md) | How the SVG card is built |
-| [docs/src/streak.md](./docs/src/streak.md) | Streak calculation algorithm |
-| [docs/deployment/vercel.md](./docs/deployment/vercel.md) | Vercel step-by-step |
+| Doc | Description |
+|-----|-------------|
+| [Setup Guide](docs/setup.md) | Prerequisites, install, local dev |
+| [API Reference](docs/api.md) | Every parameter with examples |
+| [Templates & Palettes](docs/templates.md) | Design tokens, layouts |
+| [Deployment](docs/deployment.md) | Vercel + GitHub Actions |
+| [How It Works](docs/how-it-works.md) | Architecture & data flow |
+| [Contributing](docs/contributing.md) | Add templates, palettes, PRs |
 
 ---
 
 ## License
 
-MIT — free to use, fork, and modify. No attribution required.
+**MIT License with Attribution Requirement** — see [LICENSE](LICENSE).
+
+You are free to use, fork, and modify this project. If you deploy it publicly or build on top of it, you **must** include a visible credit:
+
+> *Based on [GitHub Streak Tracker](https://github.com/SAPTARSHI-coder/github-streak-tracker) by [SAPTARSHI SADHU](https://github.com/SAPTARSHI-coder)*
+
+---
+
+<div align="center">
+
+Made with ♥ by **[SAPTARSHI SADHU](https://github.com/SAPTARSHI-coder)**
+
+If this helped you, please consider ⭐ starring the repo — it means a lot!
+
+</div>
