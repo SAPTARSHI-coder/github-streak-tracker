@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neon — Streak Card</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="template.css" />
+  <style>
+    :root { --accent: #39ff14; }
+  </style>
+</head>
+<body>
+
+  <nav class="t-nav">
+    <a href="../index.html" class="t-back">
+      <span class="t-back-arrow">←</span> All Templates
+    </a>
+    <span class="t-name">Neon</span>
+    <div class="t-actions">
+      <button class="t-btn t-btn-ghost" id="btn-copy-svg">Copy SVG</button>
+      <button class="t-btn t-btn-solid" id="btn-copy-md">Copy Markdown</button>
+    </div>
+  </nav>
+
+  <div class="t-stage">
+
+    <div class="t-card-wrap">
+      <svg id="streak-card"
+        viewBox="0 0 495 195"
+        xmlns="http://www.w3.org/2000/svg"
+        role="img"
+        aria-label="GitHub Streak Stats for SAPTARSHI-coder"
+      >
+        <title>GitHub Streak Stats — SAPTARSHI-coder</title>
+
+        <defs>
+          <!-- Multi-layer neon glow -->
+          <filter id="neon-lg" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="6"  result="b1"/>
+            <feGaussianBlur stdDeviation="14" result="b2"/>
+            <feMerge>
+              <feMergeNode in="b2"/>
+              <feMergeNode in="b1"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+          <filter id="neon-sm" x="-10%" y="-10%" width="120%" height="120%">
+            <feGaussianBlur stdDeviation="3" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- Background -->
+        <rect width="495" height="195" rx="10" fill="#050505"/>
+
+        <!-- Neon border (layered for glow depth) -->
+        <rect width="495" height="195" rx="10"
+              fill="none" stroke="#39ff14" stroke-width="1"
+              filter="url(#neon-lg)" opacity="0.6"/>
+        <rect width="495" height="195" rx="10"
+              fill="none" stroke="#39ff14" stroke-width="1"/>
+
+        <!-- Title -->
+        <text x="247" y="22" text-anchor="middle"
+              font-family="'JetBrains Mono', monospace" font-size="11" font-weight="500"
+              fill="#39ff14" letter-spacing="1" filter="url(#neon-sm)">
+          ⚡ GITHUB STREAK STATS — SAPTARSHI-coder
+        </text>
+
+        <!-- Dividers -->
+        <line x1="20"  y1="32" x2="475" y2="32" stroke="#0d2200" stroke-width="1"/>
+        <line x1="165" y1="38" x2="165" y2="181" stroke="#0d2200" stroke-width="1"/>
+        <line x1="330" y1="38" x2="330" y2="181" stroke="#0d2200" stroke-width="1"/>
+
+        <!-- Column 1: Total -->
+        <g>
+          <text x="82" y="72" text-anchor="middle" font-size="22"
+                fill="#39ff14" filter="url(#neon-sm)">📊</text>
+          <text x="82" y="90" text-anchor="middle"
+                font-family="'JetBrains Mono', monospace" font-size="8"
+                fill="#267700" letter-spacing="1.5">
+            TOTAL
+          </text>
+          <text x="82" y="126" text-anchor="middle"
+                font-family="'JetBrains Mono', monospace" font-size="28" font-weight="600"
+                fill="#39ff14" filter="url(#neon-sm)">
+            1,247
+          </text>
+          <text x="82" y="145" text-anchor="middle"
+                font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#267700">
+            365d window
+          </text>
+        </g>
+
+        <!-- Column 2: Current -->
+        <g>
+          <text x="248" y="72" text-anchor="middle" font-size="22"
+                fill="#ff2d78" filter="url(#neon-sm)">🔥</text>
+          <text x="248" y="90" text-anchor="middle"
+                font-family="'JetBrains Mono', monospace" font-size="8"
+                fill="#7a0030" letter-spacing="1.5">
+            CURRENT
+          </text>
+          <text x="248" y="126" text-anchor="middle"
+                font-family="'JetBrains Mono', monospace" font-size="28" font-weight="600"
+                fill="#ff2d78" filter="url(#neon-sm)">
+            42 days
+          </text>
+          <text x="248" y="145" text-anchor="middle"
+                font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#7a0030">
+            May 1 – May 6
+          </text>
+        </g>
+
+        <!-- Column 3: Longest -->
+        <g>
+          <text x="413" y="72" text-anchor="middle" font-size="22"
+                fill="#00f5ff" filter="url(#neon-sm)">⚡</text>
+          <text x="413" y="90" text-anchor="middle"
+                font-family="'JetBrains Mono', monospace" font-size="8"
+                fill="#005a5f" letter-spacing="1.5">
+            LONGEST
+          </text>
+          <text x="413" y="126" text-anchor="middle"
+                font-family="'JetBrains Mono', monospace" font-size="28" font-weight="600"
+                fill="#00f5ff" filter="url(#neon-sm)">
+            87 days
+          </text>
+          <text x="413" y="145" text-anchor="middle"
+                font-family="'JetBrains Mono', monospace" font-size="8.5" fill="#005a5f">
+            Feb 3 – Apr 30
+          </text>
+        </g>
+
+        <!-- Footer -->
+        <text x="247" y="183" text-anchor="middle"
+              font-family="'JetBrains Mono', monospace" font-size="8" fill="#0a2200">
+          auto-updated · github actions
+        </text>
+      </svg>
+    </div>
+
+    <div class="t-embed">
+      <div class="t-embed-header">
+        <span class="t-embed-label">README Embed</span>
+        <button class="t-copy-inline" id="btn-copy-embed">copy</button>
+      </div>
+      <pre class="t-embed-code" id="embed-code">![GitHub Streak](https://raw.githubusercontent.com/SAPTARSHI-coder/github-streak-tracker/main/streak.svg)</pre>
+    </div>
+  </div>
+
+  <footer class="t-footer">Streak.Studio · Neon Template · Personal use only</footer>
+  <div class="t-toast" id="toast">✓ Copied!</div>
+
+  <script>
+    const toast = document.getElementById('toast');
+    function showToast(msg = '✓ Copied!') {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+    document.getElementById('btn-copy-svg').addEventListener('click', () => {
+      navigator.clipboard.writeText(document.getElementById('streak-card').outerHTML)
+        .then(() => showToast('✓ SVG copied!'));
+    });
+    document.getElementById('btn-copy-md').addEventListener('click', () => {
+      navigator.clipboard.writeText(document.getElementById('embed-code').textContent.trim())
+        .then(() => showToast('✓ Markdown copied!'));
+    });
+    document.getElementById('btn-copy-embed').addEventListener('click', () => {
+      navigator.clipboard.writeText(document.getElementById('embed-code').textContent.trim())
+        .then(() => showToast('✓ Copied!'));
+    });
+  </script>
+
+</body>
+</html>
