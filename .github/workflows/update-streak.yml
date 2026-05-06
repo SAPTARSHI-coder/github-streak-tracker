@@ -1,22 +1,34 @@
 # .github/workflows/update-streak.yml
 #
-# Daily cron job — regenerates streak.svg and commits it back to the repo.
-# This lets you embed the SVG as a raw GitHub URL in your README.
+# WHAT THIS DOES:
+#   Runs every day at 00:10 UTC. It calls src/generate.js to fetch your latest
+#   GitHub contribution data, regenerate streak.svg, and commit it back to the
+#   repo if anything changed. Your README embeds streak.svg as a raw URL,
+#   so the card on your profile updates automatically.
 #
-# No custom secrets required — uses the built-in GITHUB_TOKEN.
-# Optional repository variable: STREAK_USERNAME
-#   → Settings > Variables > Actions > New repository variable
-#   → Value: your GitHub username (defaults to 'octocat' if not set)
+# HOW TO TRIGGER MANUALLY:
+#   Go to Actions tab → "Update GitHub Streak SVG" → "Run workflow" button.
+#
+# REQUIRED SETUP (one-time):
+#   No custom secrets needed — this workflow uses the built-in GITHUB_TOKEN
+#   that GitHub provides automatically to every repository.
+#
+# OPTIONAL REPOSITORY VARIABLES (Settings → Secrets and variables → Actions → Variables):
+#   STREAK_USERNAME   Your GitHub login. Defaults to the repo owner if not set.
+#   STREAK_TEMPLATE   Which card style: ember | frost | neon        (default: ember)
+#   STREAK_PALETTE    Which color theme: dark | dracula | catppuccin | nord | light (default: dark)
+#   STREAK_LAYOUT     Card layout: row | stacked | hero             (default: row)
+#   STREAK_FONT       Font style: inter | jetbrains | spacegrotesk | mono (default: inter)
 
 name: Update GitHub Streak SVG
 
 on:
   schedule:
-    # Runs every day at 00:10 UTC (shortly after midnight — contributions
-    # are tallied at midnight UTC by GitHub).
+    # 00:10 UTC daily — GitHub tallies contributions at midnight UTC,
+    # so we wait 10 minutes to ensure today's data is available.
     - cron: '10 0 * * *'
 
-  # Allow manual trigger from the Actions tab
+  # Lets you click "Run workflow" in the Actions tab whenever you want
   workflow_dispatch:
 
 jobs:
@@ -26,42 +38,53 @@ jobs:
     timeout-minutes: 10
 
     permissions:
-      contents: write   # needed to commit & push streak.svg back to the repo
+      contents: write   # required so the bot can commit streak.svg back to the repo
 
-    # Only run on the default branch
+    # Safety check: only run on the default branch to avoid committing to PRs
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
 
     steps:
-      # ── 1. Check out the repository ──────────────────────────────────────
+      # ── Step 1: Download the repository code ─────────────────────────────────
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # ── 2. Set up Node.js ────────────────────────────────────────────────
+      # ── Step 2: Install Node.js (same version as local dev) ──────────────────
       - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: 'npm'   # caches node_modules between runs to speed things up
 
-      # ── 3. Install dependencies ──────────────────────────────────────────
+      # ── Step 3: Install production dependencies only (no devDependencies) ────
       - name: Install dependencies
         run: npm ci --omit=dev
 
-      # ── 4. Generate the SVG ──────────────────────────────────────────────
+      # ── Step 4: Run the generator script ─────────────────────────────────────
+      # All STREAK_* values come from repository variables you set in Settings.
+      # If a variable is not set, the script uses the default shown in the comment.
       - name: Generate streak SVG
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Set your GitHub username as a repository variable:
-          # Settings > Variables > Actions > New repository variable
-          # Name: STREAK_USERNAME, Value: your-github-username
-          STREAK_USERNAME: ${{ vars.STREAK_USERNAME || github.repository_owner }}
+          GITHUB_TOKEN:     ${{ secrets.GITHUB_TOKEN }}
+          STREAK_USERNAME:  ${{ vars.STREAK_USERNAME  || github.repository_owner }}
+          STREAK_TEMPLATE:  ${{ vars.STREAK_TEMPLATE  || 'ember'  }}
+          STREAK_PALETTE:   ${{ vars.STREAK_PALETTE   || 'dark'   }}
+          STREAK_LAYOUT:    ${{ vars.STREAK_LAYOUT    || 'row'    }}
+          STREAK_FONT:      ${{ vars.STREAK_FONT      || 'inter'  }}
         run: |
-          node src/generate.js "$STREAK_USERNAME" streak.svg
+          node src/generate.js \
+            "$STREAK_USERNAME" \
+            streak.svg \
+            "$STREAK_TEMPLATE" \
+            "$STREAK_PALETTE" \
+            "$STREAK_LAYOUT" \
+            "$STREAK_FONT"
           echo "Generated streak.svg for $STREAK_USERNAME"
 
-      # ── 5. Commit & push if the SVG changed ─────────────────────────────
+      # ── Step 5: Commit the updated SVG (only if it actually changed) ──────────
+      # git diff --staged --quiet exits 0 (no changes) or 1 (has changes).
+      # We only push when there's a real change — avoids empty commits.
       - name: Commit updated streak SVG
         run: |
           git config user.name  "github-actions[bot]"
@@ -69,9 +92,9 @@ jobs:
 
           git add streak.svg
           if git diff --staged --quiet; then
-            echo "No changes to commit (SVG unchanged)."
+            echo "No changes to commit (SVG is identical to last run)."
           else
             git commit -m "chore: update streak SVG [skip ci]"
             git push
-            echo "✅ Committed and pushed updated streak.svg"
+            echo "✅ Pushed updated streak.svg"
           fi
