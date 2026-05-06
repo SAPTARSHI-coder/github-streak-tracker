@@ -3,10 +3,10 @@
 # Daily cron job — regenerates streak.svg and commits it back to the repo.
 # This lets you embed the SVG as a raw GitHub URL in your README.
 #
-# Required secret: STREAK_TOKEN
-#   → Settings > Secrets and Variables > Actions > New repository secret
-#   → Value: a classic Personal Access Token with "repo" scope
-#     (Generate at: https://github.com/settings/tokens)
+# No custom secrets required — uses the built-in GITHUB_TOKEN.
+# Optional repository variable: STREAK_USERNAME
+#   → Settings > Variables > Actions > New repository variable
+#   → Value: your GitHub username (defaults to 'octocat' if not set)
 
 name: Update GitHub Streak SVG
 
@@ -33,7 +33,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.STREAK_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # ── 2. Set up Node.js ────────────────────────────────────────────────
       - name: Set up Node.js 20
@@ -49,9 +49,10 @@ jobs:
       # ── 4. Generate the SVG ──────────────────────────────────────────────
       - name: Generate streak SVG
         env:
-          GITHUB_TOKEN: ${{ secrets.STREAK_TOKEN }}
-          # Replace "octocat" with your actual GitHub username, or set it
-          # as a repository variable (Settings > Variables > Actions).
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Set your GitHub username as a repository variable:
+          # Settings > Variables > Actions > New repository variable
+          # Name: STREAK_USERNAME, Value: your-github-username
           STREAK_USERNAME: ${{ vars.STREAK_USERNAME || 'octocat' }}
         run: |
           node src/generate.js "$STREAK_USERNAME" streak.svg
