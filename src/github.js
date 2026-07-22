@@ -1,9 +1,8 @@
 /**
  * github.js — GitHub GraphQL API client
  *
- * Fetches the full contributionCalendar for the last 12 months for a given
- * username.  We request every week so we always have ≥ 365 days of data,
- * letting streak logic work correctly across year boundaries.
+ * Fetches contributionCalendars for the last 2 years for a given username,
+ * merging them so streak logic works across multi-year histories.
  */
 
 'use strict';
@@ -12,15 +11,24 @@ const fetch = require('node-fetch');
 
 const GITHUB_API = 'https://api.github.com/graphql';
 
-// GraphQL query — fetches contributions for the last year per GitHub's API.
-// The `contributionCalendar` object always covers the 365-day window that
-// GitHub shows on a profile page.
 const CONTRIBUTION_QUERY = `
-  query($login: String!) {
+  query($login: String!, $from1: DateTime!, $to1: DateTime!, $from2: DateTime!, $to2: DateTime!) {
     user(login: $login) {
       name
       login
-      contributionsCollection {
+      c1: contributionsCollection(from: $from1, to: $to1) {
+        contributionCalendar {
+          totalContributions
+          weeks {
+            contributionDays {
+              date
+              contributionCount
+              weekday
+            }
+          }
+        }
+      }
+      c2: contributionsCollection(from: $from2, to: $to2) {
         contributionCalendar {
           totalContributions
           weeks {
@@ -37,7 +45,7 @@ const CONTRIBUTION_QUERY = `
 `;
 
 /**
- * Fetch contribution data for a GitHub username.
+ * Fetch contribution data for a GitHub username across the last 2 years.
  *
  * @param {string} username  — GitHub login (case-insensitive)
  * @param {string} token     — GitHub Personal Access Token (read:user scope)
@@ -55,6 +63,20 @@ async function fetchContributions(username, token) {
     );
   }
 
+  const now = new Date();
+  const oneYearAgo = new Date(now);
+  oneYearAgo.setFullYear(now.getFullYear() - 1);
+  const twoYearsAgo = new Date(now);
+  twoYearsAgo.setFullYear(now.getFullYear() - 2);
+
+  const variables = {
+    login: username,
+    from1: twoYearsAgo.toISOString(),
+    to1: oneYearAgo.toISOString(),
+    from2: oneYearAgo.toISOString(),
+    to2: now.toISOString(),
+  };
+
   const response = await fetch(GITHUB_API, {
     method: 'POST',
     headers: {
@@ -64,7 +86,7 @@ async function fetchContributions(username, token) {
     },
     body: JSON.stringify({
       query: CONTRIBUTION_QUERY,
-      variables: { login: username },
+      variables,
     }),
   });
 
@@ -88,17 +110,27 @@ async function fetchContributions(username, token) {
   }
 
   const { user } = json.data;
-  const calendar = user.contributionsCollection.contributionCalendar;
+  const cal1 = user.c1.contributionCalendar;
+  const cal2 = user.c2.contributionCalendar;
 
-  // Flatten weeks → days, sorted chronologically (oldest → newest)
-  const contributionDays = calendar.weeks
-    .flatMap((week) => week.contributionDays)
-    .sort((a, b) => (a.date < b.date ? -1 : 1));
+  const days1 = cal1.weeks.flatMap((w) => w.contributionDays);
+  const days2 = cal2.weeks.flatMap((w) => w.contributionDays);
+
+  const daysMap = new Map();
+  for (const day of [...days1, ...days2]) {
+    daysMap.set(day.date, day);
+  }
+
+  const contributionDays = Array.from(daysMap.values()).sort((a, b) =>
+    a.date < b.date ? -1 : 1
+  );
+
+  const totalContributions = cal1.totalContributions + cal2.totalContributions;
 
   return {
     login: user.login,
     name: user.name || user.login,
-    totalContributions: calendar.totalContributions,
+    totalContributions,
     contributionDays,
   };
 }
